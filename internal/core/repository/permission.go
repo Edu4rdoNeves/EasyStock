@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Edu4rdoNeves/EasyStrock/internal/domain/model"
 	"gorm.io/gorm"
@@ -50,11 +51,13 @@ func (r *PermissionRepository) GetPermissionById(id int) (*model.Permission, err
 func (r *PermissionRepository) CreatePermission(Permission *model.Permission) error {
 	var existingPermission model.Permission
 
+	lowerPermissionName := strings.ToLower(Permission.PermissionName)
+
 	err := r.db.Model(&model.Permission{}).
-		Where("permission_id = ? AND permission_name = ?", Permission.PermissionId, Permission.PermissionName).
+		Where("permission_name = ?", lowerPermissionName).
 		First(&existingPermission).Error
 	if err == nil {
-		return fmt.Errorf("permission already exists. Error: %v", err)
+		return fmt.Errorf("permission name already exists. Error: %v", err)
 	}
 
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
