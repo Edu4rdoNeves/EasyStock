@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/Edu4rdoNeves/EasyStrock/internal/api/dependencies"
 	"github.com/Edu4rdoNeves/EasyStrock/internal/api/middleware"
+	"github.com/Edu4rdoNeves/EasyStrock/internal/infrastructure/database"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +13,8 @@ func Router(router *gin.Engine) *gin.Engine {
 	productControllerWithDependencies := dependencies.ProductDependency()
 	permissionControllerWithDependencies := dependencies.PermissionDependency()
 
+	db := database.Get()
+
 	main := router.Group("api/v1")
 	{
 		login := main.Group("login")
@@ -19,7 +22,7 @@ func Router(router *gin.Engine) *gin.Engine {
 			login.POST("/", loginControllerWithDependencies.Login)
 		}
 
-		user := main.Group("user", middleware.Auth())
+		user := main.Group("user", middleware.Auth(), middleware.AdminMiddleware(db))
 		{
 			user.GET("/", userControllerWithDependencies.GetUsers)
 			user.GET("/:id", userControllerWithDependencies.GetUserById)
@@ -41,7 +44,7 @@ func Router(router *gin.Engine) *gin.Engine {
 			product.POST("/", productControllerWithDependencies.CreateProduct)
 		}
 
-		permission := main.Group("permission", middleware.Auth())
+		permission := main.Group("permission", middleware.Auth(), middleware.AdminMiddleware(db))
 		{
 			permission.GET("/", permissionControllerWithDependencies.GetPermissions)
 			permission.GET("/:id", permissionControllerWithDependencies.GetPermissionById)
