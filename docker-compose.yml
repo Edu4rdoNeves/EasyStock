@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+  
+  mysql:
+    image: 'mysql:8.0'
+    container_name: EasyStock
+    restart: always
+    environment:
+       MYSQL_ROOT_PASSWORD: easyStock
+       MYSQL_DATABASE: easyStock
+       MYSQL_PASSWORD: root123_easyStock
+       MYSQL_USER: admin
+    ports:
+      - "3306:3306"
+      
+
