@@ -4,6 +4,7 @@ import (
 	"github.com/Edu4rdoNeves/EasyStrock/internal/api/dependencies"
 	"github.com/Edu4rdoNeves/EasyStrock/internal/api/middleware"
 	"github.com/Edu4rdoNeves/EasyStrock/internal/infrastructure/database"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,6 +15,14 @@ func Router(router *gin.Engine) *gin.Engine {
 	permissionControllerWithDependencies := dependencies.PermissionDependency()
 
 	db := database.Get()
+
+	router.Use(cors.New(cors.Config{
+
+		AllowOrigins:     []string{"http://localhost:3000"}, // Frontend em React
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
 	main := router.Group("api/v1")
 	{
