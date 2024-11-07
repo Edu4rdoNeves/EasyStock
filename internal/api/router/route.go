@@ -17,12 +17,22 @@ func Router(router *gin.Engine) *gin.Engine {
 	db := database.Get()
 
 	router.Use(cors.New(cors.Config{
-
-		AllowOrigins:     []string{"http://localhost:3000"}, // Frontend em React
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
+		MaxAge:           12 * 3600,
 	}))
+
+	router.OPTIONS("/*path", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Status(204)
+		return
+	})
 
 	main := router.Group("api/v1")
 	{
@@ -47,7 +57,7 @@ func Router(router *gin.Engine) *gin.Engine {
 		product := main.Group("product", middleware.Auth())
 		{
 			product.GET("/", productControllerWithDependencies.GetProducts)
-			product.GET("/:id", productControllerWithDependencies.GetProductById)
+			product.GET("/search", productControllerWithDependencies.GetProductByNameOrID)
 			product.PUT("/:id", productControllerWithDependencies.UpdateProduct)
 			product.DELETE("/:id", productControllerWithDependencies.DeleteProduct)
 			product.POST("/", productControllerWithDependencies.CreateProduct)

@@ -11,6 +11,7 @@ import (
 type IProductRepository interface {
 	GetProducts(offset, limit int) ([]*model.Product, error)
 	GetProductById(id int) (*model.Product, error)
+	GetProductByName(name string) (*model.Product, error)
 	CreateProduct(product *model.Product) error
 	UpdateProduct(product *model.Product, id *int) error
 	DeleteProduct(id *int) error
@@ -42,6 +43,17 @@ func (r *ProductRepository) GetProductById(id int) (*model.Product, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to get product by id. Error: %v", err)
 
+	}
+
+	return product, nil
+}
+
+func (r *ProductRepository) GetProductByName(name string) (*model.Product, error) {
+	product := &model.Product{}
+
+	err := r.db.Where("name LIKE ?", "%"+name+"%").First(&product).Error
+	if err != nil {
+		return nil, fmt.Errorf("fail to get product by name. Error: %v", err)
 	}
 
 	return product, nil

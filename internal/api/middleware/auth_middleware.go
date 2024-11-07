@@ -9,17 +9,26 @@ const admin = 1
 
 func Auth() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		const Bearer_schena = "Bearer "
+		// Permite que requisições OPTIONS passem sem autenticação
+		if context.Request.Method == "OPTIONS" {
+			context.Next()
+			return
+		}
+
+		const Bearer_schema = "Bearer "
 		header := context.GetHeader("Authorization")
 		if header == "" {
 			context.AbortWithStatus(401)
+			return
 		}
 
-		token := header[len(Bearer_schena):]
+		token := header[len(Bearer_schema):]
 
 		if !tools.NewJWTService().ValidateToken(token) {
 			context.AbortWithStatus(401)
 			return
 		}
+
+		context.Next() // Continue para a próxima etapa, se autenticado
 	}
 }

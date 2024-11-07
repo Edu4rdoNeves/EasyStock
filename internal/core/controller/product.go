@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/Edu4rdoNeves/EasyStrock/internal/core/usecases"
@@ -10,7 +11,7 @@ import (
 
 type IProductController interface {
 	GetProducts(context *gin.Context)
-	GetProductById(context *gin.Context)
+	GetProductByNameOrID(context *gin.Context)
 	CreateProduct(context *gin.Context)
 	UpdateProduct(context *gin.Context)
 	DeleteProduct(context *gin.Context)
@@ -40,24 +41,25 @@ func (c *ProductController) GetProducts(context *gin.Context) {
 	context.JSON(200, products)
 }
 
-func (c *ProductController) GetProductById(context *gin.Context) {
-	param, bool := context.Params.Get("id")
-	if !bool {
-		context.JSON(500, gin.H{
-			"Error: ": "Param is not valid",
-		})
+func (c *ProductController) GetProductByNameOrID(context *gin.Context) {
+	param := context.Query("param")
+
+	if param == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Você precisa passar um parâmetro de pesquisa: id ou name"})
 		return
 	}
 
-	product, err := c.usecases.GetProductById(param)
+	product, err := c.usecases.GetProductByNameOrID(param)
 	if err != nil {
-		context.JSON(500, gin.H{
-			"Error: ": "Can't find a product: " + err.Error(),
-		})
+		context.JSON(http.StatusNotFound, gin.H{"message": "Produto não encontrado"})
 		return
 	}
 
-	context.JSON(200, product)
+	products := []model.Product{
+		*product,
+	}
+
+	context.JSON(200, products)
 }
 
 func (c *ProductController) CreateProduct(context *gin.Context) {

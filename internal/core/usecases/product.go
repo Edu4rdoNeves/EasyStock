@@ -9,7 +9,7 @@ import (
 
 type IProductUseCases interface {
 	GetProducts(page, limit int) ([]*model.Product, error)
-	GetProductById(id string) (*model.Product, error)
+	GetProductByNameOrID(id string) (*model.Product, error)
 	CreateProduct(product *model.Product) error
 	UpdateProduct(product *model.Product, id string) error
 	DeleteProduct(id string) error
@@ -34,18 +34,13 @@ func (u *ProductUseCases) GetProducts(page, limit int) ([]*model.Product, error)
 	return products, nil
 }
 
-func (u *ProductUseCases) GetProductById(id string) (*model.Product, error) {
-	newId, err := strconv.Atoi(id)
-	if err != nil {
-		return nil, err
+func (u *ProductUseCases) GetProductByNameOrID(param string) (*model.Product, error) {
+
+	if productID, err := strconv.Atoi(param); err == nil {
+		return u.repository.GetProductById(productID)
 	}
 
-	user, err := u.repository.GetProductById(newId)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return u.repository.GetProductByName(param)
 }
 
 func (u *ProductUseCases) CreateProduct(product *model.Product) error {
