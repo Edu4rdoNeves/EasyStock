@@ -11,7 +11,6 @@ import (
 
 type IProductController interface {
 	GetProducts(context *gin.Context)
-	GetProductByNameOrID(context *gin.Context)
 	CreateProduct(context *gin.Context)
 	UpdateProduct(context *gin.Context)
 	DeleteProduct(context *gin.Context)
@@ -27,6 +26,23 @@ func NewProductController(usecases usecases.IProductUseCases) IProductController
 
 func (c *ProductController) GetProducts(context *gin.Context) {
 
+	param := context.Query("param")
+
+	if param != "" {
+		product, err := c.usecases.GetProductByNameOrID(param)
+		if err != nil {
+			context.JSON(http.StatusNotFound, gin.H{"message": "Produto não encontrado"})
+			return
+		}
+
+		products := []model.Product{
+			*product,
+		}
+
+		context.JSON(200, products)
+		return
+	}
+
 	page, _ := strconv.Atoi(context.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(context.DefaultQuery("limit", "10"))
 
@@ -36,27 +52,6 @@ func (c *ProductController) GetProducts(context *gin.Context) {
 			"Error:": "Can't get products" + err.Error(),
 		})
 		return
-	}
-
-	context.JSON(200, products)
-}
-
-func (c *ProductController) GetProductByNameOrID(context *gin.Context) {
-	param := context.Query("param")
-
-	if param == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "Você precisa passar um parâmetro de pesquisa: id ou name"})
-		return
-	}
-
-	product, err := c.usecases.GetProductByNameOrID(param)
-	if err != nil {
-		context.JSON(http.StatusNotFound, gin.H{"message": "Produto não encontrado"})
-		return
-	}
-
-	products := []model.Product{
-		*product,
 	}
 
 	context.JSON(200, products)

@@ -57,7 +57,6 @@ func Router(router *gin.Engine) *gin.Engine {
 		product := main.Group("product", middleware.Auth())
 		{
 			product.GET("/", productControllerWithDependencies.GetProducts)
-			product.GET("/search", productControllerWithDependencies.GetProductByNameOrID)
 			product.PUT("/:id", productControllerWithDependencies.UpdateProduct)
 			product.DELETE("/:id", productControllerWithDependencies.DeleteProduct)
 			product.POST("/", productControllerWithDependencies.CreateProduct)
